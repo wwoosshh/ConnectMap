@@ -24,6 +24,9 @@ class LoginActivity : AppCompatActivity() {
 
         tokenManager = TokenManager(this)
 
+        // 사용 중인 URL 로그 출력
+        android.util.Log.d("LoginActivity", "Using server URL: ${ApiClient.getCurrentBaseUrl()}")
+
         if (tokenManager.isLoggedIn()) {
             startMainActivity()
             return

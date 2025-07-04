@@ -30,6 +30,9 @@ class MainActivity : AppCompatActivity() {
 
         tokenManager = TokenManager(this)
 
+        // 사용 중인 URL 로그 출력
+        android.util.Log.d("MainActivity", "Using server URL: ${ApiClient.getCurrentBaseUrl()}")
+
         if (!tokenManager.isLoggedIn()) {
             startLoginActivity()
             return
@@ -49,7 +52,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         restaurantAdapter = RestaurantAdapter { restaurant ->
-            // 맛집 클릭 시 상세 정보 표시 (나중에 구현)
             Toast.makeText(this, "${restaurant.name} 클릭됨", Toast.LENGTH_SHORT).show()
         }
 
@@ -80,21 +82,9 @@ class MainActivity : AppCompatActivity() {
             try {
                 val response = ApiClient.apiService.getRestaurants()
 
-                // 디버깅용 로그
-                android.util.Log.d("MainActivity", "Response code: ${response.code()}")
-                android.util.Log.d("MainActivity", "Response body: ${response.body()}")
-
                 if (response.isSuccessful && response.body()?.success == true) {
                     val restaurants = response.body()?.data ?: emptyList()
-
-                    // 디버깅용 로그
-                    android.util.Log.d("MainActivity", "Restaurants count: ${restaurants.size}")
-                    restaurants.forEach { restaurant ->
-                        android.util.Log.d("MainActivity", "Restaurant: ${restaurant.name}")
-                    }
-
                     displayRestaurants(restaurants)
-
                     Toast.makeText(
                         this@MainActivity,
                         "${restaurants.size}개의 맛집을 불러왔습니다",
@@ -102,12 +92,10 @@ class MainActivity : AppCompatActivity() {
                     ).show()
                 } else {
                     val errorMessage = response.body()?.error ?: "맛집 목록을 불러오지 못했습니다"
-                    android.util.Log.e("MainActivity", "Error: $errorMessage")
                     Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_LONG).show()
                     displayRestaurants(emptyList())
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MainActivity", "Exception: ${e.message}", e)
                 Toast.makeText(
                     this@MainActivity,
                     "네트워크 오류: ${e.message}",
