@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    // 하드코딩으로 URL 직접 입력
     private const val BASE_URL = "http://58.233.102.165:5159/api/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -17,9 +16,10 @@ object ApiClient {
 
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .connectTimeout(10, TimeUnit.SECONDS)  // 타임아웃 줄임
-        .readTimeout(10, TimeUnit.SECONDS)     // 타임아웃 줄임
-        .writeTimeout(10, TimeUnit.SECONDS)    // 타임아웃 줄임
+        .connectTimeout(60, TimeUnit.SECONDS)  // 60초로 늘림
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)        // 재시도 추가
         .build()
 
     private val retrofit = Retrofit.Builder()
