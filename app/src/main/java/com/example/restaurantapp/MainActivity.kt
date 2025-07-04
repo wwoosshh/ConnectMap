@@ -2,27 +2,20 @@ package com.example.restaurantapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.restaurantapp.models.Restaurant
-import com.example.restaurantapp.network.ApiClient
+import androidx.fragment.app.Fragment
+import com.example.restaurantapp.fragments.HomeFragment
+import com.example.restaurantapp.fragments.MapFragment
+import com.example.restaurantapp.fragments.MyRestaurantsFragment
+import com.example.restaurantapp.fragments.ProfileFragment
 import com.example.restaurantapp.utils.TokenManager
-import kotlinx.coroutines.launch
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.restaurantapp.network.ApiClient  // 이 줄 추가
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var tokenManager: TokenManager
-    private lateinit var restaurantAdapter: RestaurantAdapter
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var progressBar: ProgressBar
-    private lateinit var tvEmptyMessage: TextView
+    private lateinit var bottomNavigation: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,89 +31,49 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        initializeViews()
-        setupRecyclerView()
-        setupClickListeners()
-        loadRestaurants()
-    }
+        setupBottomNavigation()
 
-    private fun initializeViews() {
-        recyclerView = findViewById(R.id.recyclerViewRestaurants)
-        progressBar = findViewById(R.id.progressBar)
-        tvEmptyMessage = findViewById(R.id.tvEmptyMessage)
-    }
-
-    private fun setupRecyclerView() {
-        restaurantAdapter = RestaurantAdapter { restaurant ->
-            Toast.makeText(this, "${restaurant.name} 클릭됨", Toast.LENGTH_SHORT).show()
-        }
-
-        recyclerView.apply {
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = restaurantAdapter
+        // 기본 프래그먼트 설정
+        if (savedInstanceState == null) {
+            replaceFragment(HomeFragment())
         }
     }
 
-    private fun setupClickListeners() {
-        val btnLogout = findViewById<Button>(R.id.btnLogout)
-        val btnRefresh = findViewById<Button>(R.id.btnRefresh)
+    private fun setupBottomNavigation() {
+        bottomNavigation = findViewById(R.id.bottom_navigation)
 
-        btnLogout.setOnClickListener {
-            tokenManager.clearAuthData()
-            startLoginActivity()
-        }
-
-        btnRefresh.setOnClickListener {
-            loadRestaurants()
-        }
-    }
-
-    private fun loadRestaurants() {
-        showLoading(true)
-
-        lifecycleScope.launch {
-            try {
-                val response = ApiClient.apiService.getRestaurants()
-
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val restaurants = response.body()?.data ?: emptyList()
-                    displayRestaurants(restaurants)
-                    Toast.makeText(
-                        this@MainActivity,
-                        "${restaurants.size}개의 맛집을 불러왔습니다",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    val errorMessage = response.body()?.error ?: "맛집 목록을 불러오지 못했습니다"
-                    Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_LONG).show()
-                    displayRestaurants(emptyList())
+        bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    replaceFragment(HomeFragment())
+                    true
                 }
-            } catch (e: Exception) {
-                Toast.makeText(
-                    this@MainActivity,
-                    "네트워크 오류: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-                displayRestaurants(emptyList())
-            } finally {
-                showLoading(false)
+                R.id.nav_map -> {
+                    replaceFragment(MapFragment())
+                    true
+                }
+                R.id.nav_my_restaurants -> {
+                    replaceFragment(MyRestaurantsFragment())
+                    true
+                }
+                R.id.nav_profile -> {
+                    replaceFragment(ProfileFragment())
+                    true
+                }
+                else -> false
             }
         }
     }
 
-    private fun displayRestaurants(restaurants: List<Restaurant>) {
-        if (restaurants.isEmpty()) {
-            recyclerView.visibility = View.GONE
-            tvEmptyMessage.visibility = View.VISIBLE
-        } else {
-            recyclerView.visibility = View.VISIBLE
-            tvEmptyMessage.visibility = View.GONE
-            restaurantAdapter.updateRestaurants(restaurants)
-        }
+    private fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
     }
 
-    private fun showLoading(show: Boolean) {
-        progressBar.visibility = if (show) View.VISIBLE else View.GONE
+    fun logout() {
+        tokenManager.clearAuthData()
+        startLoginActivity()
     }
 
     private fun startLoginActivity() {

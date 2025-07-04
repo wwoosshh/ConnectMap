@@ -20,6 +20,26 @@ interface ApiService {
     @GET("restaurants")
     suspend fun getRestaurants(): Response<ApiResponse<List<Restaurant>>>
 
+    // 필터링된 맛집 조회
+    @GET("restaurants/filter")
+    suspend fun getFilteredRestaurants(
+        @Query("cuisineTypeId") cuisineTypeId: Int? = null,
+        @Query("location") location: String? = null,
+        @Query("minRating") minRating: Float? = null,
+        @Query("maxRating") maxRating: Float? = null,
+        @Query("minReviews") minReviews: Int? = null,
+        @Query("sortBy") sortBy: String? = "name",
+        @Query("sortOrder") sortOrder: String? = "asc"
+    ): Response<ApiResponse<List<Restaurant>>>
+
+    // 요리 종류별 맛집 조회
+    @GET("restaurants/cuisine/{cuisineTypeId}")
+    suspend fun getRestaurantsByCuisine(@Path("cuisineTypeId") cuisineTypeId: Int): Response<ApiResponse<List<Restaurant>>>
+
+    // 요리 종류 목록 조회
+    @GET("restaurants/cuisine-types")
+    suspend fun getCuisineTypes(): Response<ApiResponse<List<CuisineType>>>
+
     @GET("restaurants/{id}")
     suspend fun getRestaurant(@Path("id") id: Int): Response<ApiResponse<Restaurant>>
 

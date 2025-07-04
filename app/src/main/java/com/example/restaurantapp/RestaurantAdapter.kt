@@ -32,7 +32,10 @@ class RestaurantAdapter(
 
         holder.tvRestaurantName.text = restaurant.name
         holder.tvRating.text = "★ ${restaurant.rating}"
-        holder.tvCuisineType.text = restaurant.cuisineType
+
+        // 수정된 부분: CuisineType 객체에서 name 속성 사용
+        holder.tvCuisineType.text = restaurant.cuisineType?.name ?: "미분류"
+
         holder.tvAddress.text = restaurant.address
         holder.tvPhone.text = restaurant.phone
         holder.tvDescription.text = restaurant.description
